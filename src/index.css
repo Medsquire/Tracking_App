@@ -193,6 +193,43 @@ body {
   box-shadow: inset 0 1px 1px rgba(18, 28, 42, 0.03);
 }
 
+.login-password-wrap {
+  position: relative;
+}
+
+.login-password-wrap input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.login-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: #5a6780;
+  border-radius: 8px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.login-password-toggle:hover {
+  background: #eef2fa;
+  color: #2f3e56;
+}
+
+.password-visibility-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .login-error {
   margin: 0;
   color: #b23535;
@@ -1144,6 +1181,14 @@ th {
 
 .edit-btn {
   background: #e3a214;
+}
+
+.save-row-btn {
+  background: #2a8f5b;
+}
+
+.cancel-row-btn {
+  background: #6a7386;
 }
 
 .delete-btn {

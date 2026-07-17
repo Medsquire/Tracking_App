@@ -12,6 +12,69 @@ function RailwayIcon({ className }) {
   )
 }
 
+function PasswordVisibilityIcon({ className, visible }) {
+  if (visible) {
+    return (
+      <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+        <path
+          d="M12 5c-4.7 0-8.6 2.8-10 7 1.4 4.2 5.3 7 10 7s8.6-2.8 10-7c-1.4-4.2-5.3-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"
+          fill="currentColor"
+        />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        d="M3.3 4.7 2 6l3 3C3.8 10 2.8 11.4 2 13c1.4 4.2 5.3 7 10 7 2.2 0 4.2-.6 5.9-1.6l3.1 3.1 1.3-1.3L3.3 4.7zM8.4 12.4a3.6 3.6 0 0 0 3.2 3.2l-3.2-3.2zM12 6c4.7 0 8.6 2.8 10 7-.6 1.7-1.6 3.2-2.9 4.2L17.7 16a6 6 0 0 0-7.7-7.7L8.7 7C9.7 6.4 10.8 6 12 6z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function DeleteIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        d="M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h2v9H7V9zm4 0h2v9h-2V9zm4 0h2v9h-2V9z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function EditIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        d="M3 17.2V21h3.8L18.4 9.4l-3.8-3.8L3 17.2zm18-11.7a1 1 0 0 0 0-1.4l-1.1-1.1a1 1 0 0 0-1.4 0l-1.7 1.7 3.8 3.8L21 5.5z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function SaveIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path d="M9.2 16.2 4.8 11.8l1.4-1.4 3 3 8.6-8.6 1.4 1.4-10 10z" fill="currentColor" />
+    </svg>
+  )
+}
+
+function CancelIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        d="m12 10.6 4.9-4.9 1.4 1.4-4.9 4.9 4.9 4.9-1.4 1.4-4.9-4.9-4.9 4.9-1.4-1.4 4.9-4.9-4.9-4.9 1.4-1.4 4.9 4.9z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
 function App() {
   const ESTIMATES_STORAGE_KEY = 'tracking_estim_estimates'
   const CURRENT_USER_STORAGE_KEY = 'tracking_estim_current_user'
@@ -39,6 +102,7 @@ function App() {
   })
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
   const [loginError, setLoginError] = useState('')
+  const [isLoginPasswordVisible, setIsLoginPasswordVisible] = useState(false)
 
   const [activeView, setActiveView] = useState('estimate-list')
   const [selectedPh, setSelectedPh] = useState('ALL')
@@ -46,6 +110,9 @@ function App() {
   const [selectedEstimateId, setSelectedEstimateId] = useState(null)
   const [activeDetailTab, setActiveDetailTab] = useState('Letter from Concerned Dept.')
   const [draftEstimate, setDraftEstimate] = useState(null)
+  const [editingEstimateId, setEditingEstimateId] = useState(null)
+  const [inlineEditDraft, setInlineEditDraft] = useState(null)
+  const [workNameStartDirectory, setWorkNameStartDirectory] = useState(null)
   const [isNewWorkOpen, setIsNewWorkOpen] = useState(false)
   const [entryMode, setEntryMode] = useState('manual')
   const [uploadedLocFile, setUploadedLocFile] = useState(null)
@@ -74,67 +141,7 @@ function App() {
 
   const defaultEstimates = useMemo(
     () => [
-      {
-        id: 'EST-000',
-        estimNo: 'Y/AS/Est/26-27',
-        fileNo: 'EST-000',
-        ph: 'NA',
-        workName:
-          'Hyderabad Division: Provision of additional loop line in kachiguda station - Signal arrangements.',
-        sAndTCost: 'NA',
-        storesCost: 'NA',
-        rcilProvision: 'NA',
-        commentMessage: 'Awaiting stage approvals',
-        user: 'Priya',
-        amount: 24500,
-        currentStage: 'Submitted',
-        status: 'Pending',
-      },
-      {
-        id: 'EST-014',
-        estimNo: 'Y/AS/Est/26-31',
-        fileNo: 'EST-014',
-        ph: 'PH-1',
-        workName: 'Secunderabad Panel Interlocking material estimate.',
-        sAndTCost: '4,25,000',
-        storesCost: '1,12,000',
-        rcilProvision: '15,000',
-        commentMessage: 'Sent to manager review',
-        user: 'Rahul',
-        amount: 11200,
-        currentStage: 'Manager Review',
-        status: 'Approved',
-      },
-      {
-        id: 'EST-026',
-        estimNo: 'Y/AS/Est/26-35',
-        fileNo: 'EST-026',
-        ph: 'PH-2',
-        workName: 'Point machine replacement safety estimate package.',
-        sAndTCost: '2,90,000',
-        storesCost: '75,000',
-        rcilProvision: '10,000',
-        commentMessage: 'Rework requested at QC review',
-        user: 'Anita',
-        amount: 6800,
-        currentStage: 'QC Review',
-        status: 'Reject',
-      },
-      {
-        id: 'EST-041',
-        estimNo: 'Y/AS/Est/26-42',
-        fileNo: 'EST-041',
-        ph: 'PH-4',
-        workName: 'Surge arrester and relay renewal for route section.',
-        sAndTCost: '3,18,000',
-        storesCost: '91,500',
-        rcilProvision: 'NA',
-        commentMessage: 'Final approval in progress',
-        user: 'Vikram',
-        amount: 15300,
-        currentStage: 'Final Approval',
-        status: 'Processing',
-      },
+      
     ],
     [],
   )
@@ -157,6 +164,18 @@ function App() {
 
   const phOptions = useMemo(
     () => Array.from({ length: 30 }, (_, index) => `PH-${index + 1}`),
+    [],
+  )
+
+  const stageOptions = useMemo(
+    () => [
+      'Submitted',
+      'QC Review',
+      'Manager Review',
+      'Level 4 Review',
+      'Level 5 Review',
+      'Final Approval',
+    ],
     [],
   )
 
@@ -295,6 +314,7 @@ function App() {
     setCurrentUser(account)
     setLoginError('')
     setLoginForm({ username: '', password: '' })
+    setIsLoginPasswordVisible(false)
   }
 
   const handleLogout = () => {
@@ -309,7 +329,12 @@ function App() {
   const openDetailPage = (estimate, mode) => {
     setSelectedEstimateId(estimate.id)
     setDetailMode(mode)
-    setDraftEstimate({ ...estimate })
+    setDraftEstimate({
+      ...estimate,
+      abstractEstimate: estimate.abstractEstimate || 'NA',
+      detailEstimate: estimate.detailEstimate || 'NA',
+      commentMessage: getCommentMessage(estimate),
+    })
     setActiveDetailTab('Letter from Concerned Dept.')
   }
 
@@ -321,6 +346,51 @@ function App() {
 
   const updateDraftField = (field, value) => {
     setDraftEstimate((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const openInlineEdit = (estimate) => {
+    setEditingEstimateId(estimate.id)
+    setInlineEditDraft({
+      estimNo: estimate.estimNo || '',
+      fileNo: estimate.fileNo || '',
+      ph: estimate.ph || 'NA',
+      workName: estimate.workName || '',
+      abstractEstimate: estimate.abstractEstimate || 'NA',
+      detailEstimate: estimate.detailEstimate || 'NA',
+      sAndTCost: estimate.sAndTCost || 'NA',
+      storesCost: estimate.storesCost || 'NA',
+      rcilProvision: estimate.rcilProvision || 'NA',
+      currentStage: estimate.currentStage || 'Submitted',
+      status: estimate.status || 'Pending',
+      commentMessage: getCommentMessage(estimate),
+    })
+  }
+
+  const updateInlineEditField = (field, value) => {
+    setInlineEditDraft((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const cancelInlineEdit = () => {
+    setEditingEstimateId(null)
+    setInlineEditDraft(null)
+  }
+
+  const saveInlineEdit = (estimateId) => {
+    if (!inlineEditDraft) {
+      return
+    }
+
+    setEstimates((prev) =>
+      prev.map((estimate) =>
+        estimate.id === estimateId
+          ? {
+              ...estimate,
+              ...inlineEditDraft,
+            }
+          : estimate,
+      ),
+    )
+    cancelInlineEdit()
   }
 
   const saveEditedEstimate = () => {
@@ -353,6 +423,10 @@ function App() {
 
   const deleteEstimate = (estimateId) => {
     setEstimates((prev) => prev.filter((estimate) => estimate.id !== estimateId))
+
+    if (editingEstimateId === estimateId) {
+      cancelInlineEdit()
+    }
 
     if (selectedEstimateId === estimateId) {
       closeDetailPage()
@@ -425,7 +499,135 @@ function App() {
     locFileInputRef.current?.click()
   }
 
-  const openWorkNameFilePicker = () => {
+  const rememberSelectedFile = (fileName) => {
+    setRecentFiles((prev) => [fileName, ...prev.filter((name) => name !== fileName)].slice(0, 6))
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        role: 'bot',
+        text: `Selected file: ${fileName}. I can remember recent file names for quick lookup.`,
+      },
+    ])
+  }
+
+  const chooseWorkStartDirectory = async () => {
+    if (typeof window === 'undefined' || !('showDirectoryPicker' in window)) {
+      return null
+    }
+
+    try {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: 'Please select Local Disk (C:) once. I will use it as the start folder for Work Name file selection.',
+        },
+      ])
+
+      const directoryHandle = await window.showDirectoryPicker({
+        id: 'work-name-start-folder',
+        mode: 'read',
+      })
+
+      setWorkNameStartDirectory(directoryHandle)
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: `Start folder set to: ${directoryHandle.name}.`,
+        },
+      ])
+
+      return directoryHandle
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        return null
+      }
+
+      return null
+    }
+  }
+
+  const openWorkNameFilePicker = async () => {
+    if (typeof window !== 'undefined' && 'showOpenFilePicker' in window) {
+      try {
+        let startDirectory = workNameStartDirectory
+
+        if (!startDirectory) {
+          startDirectory = await chooseWorkStartDirectory()
+        }
+
+        if (!startDirectory) {
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              role: 'bot',
+              text: 'Start folder was not selected. Please choose Local Disk (C:) and click Work Name again.',
+            },
+          ])
+          return
+        }
+
+        if (!workNameStartDirectory) {
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              role: 'bot',
+              text: 'Local Disk (C:) was selected. Click Work Name once more to open file picker from that location.',
+            },
+          ])
+          return
+        }
+
+        const [fileHandle] = await window.showOpenFilePicker({
+          multiple: false,
+          id: 'work-name-file-picker',
+          startIn: startDirectory,
+          types: [
+            {
+              description: 'Work documents',
+              accept: {
+                'application/pdf': ['.pdf'],
+                'application/msword': ['.doc'],
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+                'application/vnd.ms-excel': ['.xls'],
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+                'text/plain': ['.txt'],
+              },
+            },
+          ],
+        })
+
+        if (fileHandle?.name) {
+          rememberSelectedFile(fileHandle.name)
+        }
+
+        return
+      } catch (error) {
+        if (error?.name === 'AbortError') {
+          return
+        }
+
+        if (error?.name === 'SecurityError') {
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              role: 'bot',
+              text: 'For browser security, click Work Name once to choose C: and click again to pick the file.',
+            },
+          ])
+          return
+        }
+      }
+    }
+
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        role: 'bot',
+        text: 'Browser fallback picker opened. Please choose Local Disk (C:) manually.',
+      },
+    ])
     workNameFileInputRef.current?.click()
   }
 
@@ -433,14 +635,7 @@ function App() {
     const file = event.target.files?.[0]
 
     if (file) {
-      setRecentFiles((prev) => [file.name, ...prev.filter((name) => name !== file.name)].slice(0, 6))
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: 'bot',
-          text: `Selected file: ${file.name}. I can remember recent file names for quick lookup.`,
-        },
-      ])
+      rememberSelectedFile(file.name)
     }
 
     event.target.value = ''
@@ -578,6 +773,8 @@ function App() {
         entryMode === 'upload'
           ? uploadBaseName || 'LOC Uploaded Work'
           : newWorkForm.workName.trim(),
+      abstractEstimate: 'NA',
+      detailEstimate: 'NA',
       sAndTCost: 'NA',
       storesCost: 'NA',
       rcilProvision: 'NA',
@@ -653,12 +850,26 @@ function App() {
 
               <label>
                 Password
-                <input
-                  type="password"
-                  value={loginForm.password}
-                  onChange={(event) => handleLoginChange('password', event.target.value)}
-                  placeholder="Enter shared password"
-                />
+                <div className="login-password-wrap">
+                  <input
+                    type={isLoginPasswordVisible ? 'text' : 'password'}
+                    value={loginForm.password}
+                    onChange={(event) => handleLoginChange('password', event.target.value)}
+                    placeholder="Enter shared password"
+                  />
+                  <button
+                    type="button"
+                    className="login-password-toggle"
+                    onClick={() => setIsLoginPasswordVisible((prev) => !prev)}
+                    aria-label={isLoginPasswordVisible ? 'Hide password' : 'Show password'}
+                    aria-pressed={isLoginPasswordVisible}
+                  >
+                    <PasswordVisibilityIcon
+                      className="password-visibility-icon"
+                      visible={isLoginPasswordVisible}
+                    />
+                  </button>
+                </div>
               </label>
 
               {loginError && <p className="login-error">{loginError}</p>}
@@ -799,9 +1010,12 @@ function App() {
                             <th>Office Level</th>
                             <th>PH</th>
                             <th>Work Name</th>
+                            <th>Abstract Estimate</th>
+                            <th>Detail Estimate</th>
                             <th>S &amp; T Cost</th>
                             <th>Stores Cost</th>
                             <th>RCIL Provision</th>
+                            <th>Current Stage</th>
                             <th>Status</th>
                             <th>Comment Message</th>
                           </tr>
@@ -859,6 +1073,24 @@ function App() {
                             </td>
                             <td>
                               <input
+                                value={detailData.abstractEstimate || 'NA'}
+                                onChange={(event) =>
+                                  updateDraftField('abstractEstimate', event.target.value)
+                                }
+                                disabled={!isEditMode}
+                                className="detail-input"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                value={detailData.detailEstimate || 'NA'}
+                                onChange={(event) => updateDraftField('detailEstimate', event.target.value)}
+                                disabled={!isEditMode}
+                                className="detail-input"
+                              />
+                            </td>
+                            <td>
+                              <input
                                 value={detailData.sAndTCost}
                                 onChange={(event) => updateDraftField('sAndTCost', event.target.value)}
                                 disabled={!isEditMode}
@@ -880,6 +1112,30 @@ function App() {
                                 disabled={!isEditMode}
                                 className="detail-input"
                               />
+                            </td>
+                            <td>
+                              {isEditMode ? (
+                                <select
+                                  className="detail-input"
+                                  value={detailData.currentStage || 'Submitted'}
+                                  onChange={(event) =>
+                                    updateDraftField('currentStage', event.target.value)
+                                  }
+                                >
+                                  <option value="Submitted">Submitted</option>
+                                  <option value="QC Review">QC Review</option>
+                                  <option value="Manager Review">Manager Review</option>
+                                  <option value="Level 4 Review">Level 4 Review</option>
+                                  <option value="Level 5 Review">Level 5 Review</option>
+                                  <option value="Final Approval">Final Approval</option>
+                                </select>
+                              ) : (
+                                <input
+                                  value={detailData.currentStage || 'Submitted'}
+                                  disabled
+                                  className="detail-input"
+                                />
+                              )}
                             </td>
                             <td>
                               {isEditMode ? (
@@ -986,6 +1242,7 @@ function App() {
                     <input
                       ref={workNameFileInputRef}
                       type="file"
+                      accept=".pdf,.doc,.docx,.txt,.xls,.xlsx"
                       className="loc-file-input"
                       onChange={handleWorkNameFileChange}
                     />
@@ -998,44 +1255,258 @@ function App() {
                           <th>Office Level</th>
                           <th>PH</th>
                           <th>Work Name</th>
+                          <th>Abstract Estimate</th>
+                          <th>Detail Estimate</th>
                           <th>S &amp; T Cost</th>
                           <th>Stores Cost</th>
                           <th>RCIL Provision</th>
+                          <th>Current Stage</th>
                           <th>Status</th>
                           <th>Comment Message</th>
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredEstimates.map((estimate, index) => (
                           <tr key={estimate.id}>
                             <td>{index + 1}</td>
-                            <td>{estimate.estimNo}</td>
-                            <td>{estimate.fileNo}</td>
-                            <td>{getOfficeLevelLabel(estimate)}</td>
-                            <td>{estimate.ph}</td>
-                            <td className="work-name-cell">
-                              <button
-                                type="button"
-                                className="work-name-link"
-                                onClick={openWorkNameFilePicker}
-                                title="Open local file picker"
-                              >
-                                {estimate.workName}
-                              </button>
-                            </td>
-                            <td>{estimate.sAndTCost}</td>
-                            <td>{estimate.storesCost}</td>
-                            <td>{estimate.rcilProvision}</td>
                             <td>
-                              <span
-                                className={`status-badge status-${estimate.status
-                                  .toLowerCase()
-                                  .replace(' ', '-')}`}
-                              >
-                                {estimate.status}
-                              </span>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.estimNo || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('estimNo', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                estimate.estimNo
+                              )}
                             </td>
-                            <td>{getCommentMessage(estimate)}</td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.fileNo || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('fileNo', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                estimate.fileNo
+                              )}
+                            </td>
+                            <td>
+                              {getOfficeLevelLabel(
+                                editingEstimateId === estimate.id
+                                  ? { ...estimate, ...(inlineEditDraft || {}) }
+                                  : estimate,
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <select
+                                  className="detail-input"
+                                  value={inlineEditDraft?.ph || 'NA'}
+                                  onChange={(event) => updateInlineEditField('ph', event.target.value)}
+                                >
+                                  <option value="NA">NA</option>
+                                  {phOptions.map((phValue) => (
+                                    <option key={phValue} value={phValue}>
+                                      {phValue}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                estimate.ph
+                              )}
+                            </td>
+                            <td className="work-name-cell">
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.workName || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('workName', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="work-name-link"
+                                  onClick={openWorkNameFilePicker}
+                                  title="Open local file picker"
+                                >
+                                  {estimate.workName}
+                                </button>
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.abstractEstimate || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('abstractEstimate', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                estimate.abstractEstimate || '-'
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.detailEstimate || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('detailEstimate', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                estimate.detailEstimate || '-'
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.sAndTCost || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('sAndTCost', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                estimate.sAndTCost
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.storesCost || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('storesCost', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                estimate.storesCost
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.rcilProvision || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('rcilProvision', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                estimate.rcilProvision
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <select
+                                  className="detail-input"
+                                  value={inlineEditDraft?.currentStage || 'Submitted'}
+                                  onChange={(event) =>
+                                    updateInlineEditField('currentStage', event.target.value)
+                                  }
+                                >
+                                  {stageOptions.map((stageOption) => (
+                                    <option key={stageOption} value={stageOption}>
+                                      {stageOption}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                estimate.currentStage
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <select
+                                  className="detail-input"
+                                  value={inlineEditDraft?.status || 'Pending'}
+                                  onChange={(event) =>
+                                    updateInlineEditField('status', event.target.value)
+                                  }
+                                >
+                                  <option value="Pending">Pending</option>
+                                  <option value="Processing">Processing</option>
+                                  <option value="Approved">Approved</option>
+                                  <option value="Reject">Reject</option>
+                                </select>
+                              ) : (
+                                <span
+                                  className={`status-badge status-${estimate.status
+                                    .toLowerCase()
+                                    .replace(' ', '-')}`}
+                                >
+                                  {estimate.status}
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {editingEstimateId === estimate.id ? (
+                                <input
+                                  className="detail-input"
+                                  value={inlineEditDraft?.commentMessage || ''}
+                                  onChange={(event) =>
+                                    updateInlineEditField('commentMessage', event.target.value)
+                                  }
+                                />
+                              ) : (
+                                getCommentMessage(estimate)
+                              )}
+                            </td>
+                            <td>
+                              <div className="action-group">
+                                {editingEstimateId === estimate.id ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="action-btn save-row-btn"
+                                      onClick={() => saveInlineEdit(estimate.id)}
+                                      title="Save row"
+                                      aria-label="Save row"
+                                    >
+                                      <SaveIcon className="action-icon" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="action-btn cancel-row-btn"
+                                      onClick={cancelInlineEdit}
+                                      title="Cancel edit"
+                                      aria-label="Cancel edit"
+                                    >
+                                      <CancelIcon className="action-icon" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="action-btn edit-btn"
+                                    onClick={() => openInlineEdit(estimate)}
+                                    title="Edit estimate"
+                                    aria-label="Edit estimate"
+                                  >
+                                    <EditIcon className="action-icon" />
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="action-btn delete-btn"
+                                  onClick={() => deleteEstimate(estimate.id)}
+                                  title="Delete estimate"
+                                  aria-label="Delete estimate"
+                                >
+                                  <DeleteIcon className="action-icon" />
+                                </button>
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
