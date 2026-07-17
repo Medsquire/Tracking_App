@@ -112,7 +112,6 @@ function App() {
   const [draftEstimate, setDraftEstimate] = useState(null)
   const [editingEstimateId, setEditingEstimateId] = useState(null)
   const [inlineEditDraft, setInlineEditDraft] = useState(null)
-  const [workNameStartDirectory, setWorkNameStartDirectory] = useState(null)
   const [isNewWorkOpen, setIsNewWorkOpen] = useState(false)
   const [entryMode, setEntryMode] = useState('manual')
   const [uploadedLocFile, setUploadedLocFile] = useState(null)
@@ -120,6 +119,7 @@ function App() {
   const [isDragOver, setIsDragOver] = useState(false)
   const locFileInputRef = useRef(null)
   const workNameFileInputRef = useRef(null)
+  const workNameDirectoryInputRef = useRef(null)
   const [chatOpen, setChatOpen] = useState(false)
   const [chatInput, setChatInput] = useState('')
   const [chatMessages, setChatMessages] = useState([
@@ -510,125 +510,45 @@ function App() {
     ])
   }
 
-  const chooseWorkStartDirectory = async () => {
-    if (typeof window === 'undefined' || !('showDirectoryPicker' in window)) {
-      return null
-    }
-
-    try {
+  const openWorkNameFilePicker = () => {
+    if (workNameDirectoryInputRef.current) {
       setChatMessages((prev) => [
         ...prev,
         {
           role: 'bot',
-          text: 'Please select Local Disk (C:) once. I will use it as the start folder for Work Name file selection.',
+          text: 'Select Local Disk (C:) folder or any folder. This uses webkitdirectory mode.',
         },
       ])
-
-      const directoryHandle = await window.showDirectoryPicker({
-        id: 'work-name-start-folder',
-        mode: 'read',
-      })
-
-      setWorkNameStartDirectory(directoryHandle)
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: 'bot',
-          text: `Start folder set to: ${directoryHandle.name}.`,
-        },
-      ])
-
-      return directoryHandle
-    } catch (error) {
-      if (error?.name === 'AbortError') {
-        return null
-      }
-
-      return null
-    }
-  }
-
-  const openWorkNameFilePicker = async () => {
-    if (typeof window !== 'undefined' && 'showOpenFilePicker' in window) {
-      try {
-        let startDirectory = workNameStartDirectory
-
-        if (!startDirectory) {
-          startDirectory = await chooseWorkStartDirectory()
-        }
-
-        if (!startDirectory) {
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              role: 'bot',
-              text: 'Start folder was not selected. Please choose Local Disk (C:) and click Work Name again.',
-            },
-          ])
-          return
-        }
-
-        if (!workNameStartDirectory) {
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              role: 'bot',
-              text: 'Local Disk (C:) was selected. Click Work Name once more to open file picker from that location.',
-            },
-          ])
-          return
-        }
-
-        const [fileHandle] = await window.showOpenFilePicker({
-          multiple: false,
-          id: 'work-name-file-picker',
-          startIn: startDirectory,
-          types: [
-            {
-              description: 'Work documents',
-              accept: {
-                'application/pdf': ['.pdf'],
-                'application/msword': ['.doc'],
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-                'application/vnd.ms-excel': ['.xls'],
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-                'text/plain': ['.txt'],
-              },
-            },
-          ],
-        })
-
-        if (fileHandle?.name) {
-          rememberSelectedFile(fileHandle.name)
-        }
-
-        return
-      } catch (error) {
-        if (error?.name === 'AbortError') {
-          return
-        }
-
-        if (error?.name === 'SecurityError') {
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              role: 'bot',
-              text: 'For browser security, click Work Name once to choose C: and click again to pick the file.',
-            },
-          ])
-          return
-        }
-      }
+      workNameDirectoryInputRef.current.click()
+      return
     }
 
     setChatMessages((prev) => [
       ...prev,
       {
         role: 'bot',
-        text: 'Browser fallback picker opened. Please choose Local Disk (C:) manually.',
+        text: 'Directory picker is not available here. Please choose Local Disk (C:) manually.',
       },
     ])
     workNameFileInputRef.current?.click()
+  }
+
+  const handleWorkNameDirectoryChange = (event) => {
+    const files = Array.from(event.target.files || [])
+
+    if (files.length > 0) {
+      const firstFile = files[0]
+      rememberSelectedFile(firstFile.name)
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: `Folder selected with ${files.length} file(s). First file: ${firstFile.webkitRelativePath || firstFile.name}`,
+        },
+      ])
+    }
+
+    event.target.value = ''
   }
 
   const handleWorkNameFileChange = (event) => {
@@ -1245,6 +1165,15 @@ function App() {
                       accept=".pdf,.doc,.docx,.txt,.xls,.xlsx"
                       className="loc-file-input"
                       onChange={handleWorkNameFileChange}
+                    />
+                    <input
+                      ref={workNameDirectoryInputRef}
+                      type="file"
+                      className="loc-file-input"
+                      onChange={handleWorkNameDirectoryChange}
+                      webkitdirectory=""
+                      directory=""
+                      multiple
                     />
                     <table className="estimation-table">
                       <thead>
