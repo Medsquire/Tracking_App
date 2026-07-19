@@ -113,11 +113,6 @@ function App() {
   const [editingEstimateId, setEditingEstimateId] = useState(null)
   const [inlineEditDraft, setInlineEditDraft] = useState(null)
   const [isNewWorkOpen, setIsNewWorkOpen] = useState(false)
-  const [entryMode, setEntryMode] = useState('manual')
-  const [uploadedLocFile, setUploadedLocFile] = useState(null)
-  const [locError, setLocError] = useState('')
-  const [isDragOver, setIsDragOver] = useState(false)
-  const locFileInputRef = useRef(null)
   const workNameFileInputRef = useRef(null)
   const workNameDirectoryInputRef = useRef(null)
   const [chatOpen, setChatOpen] = useState(false)
@@ -129,12 +124,14 @@ function App() {
     },
   ])
   const [recentFiles, setRecentFiles] = useState([])
+  const defaultWorkplacePath = 'C:\\Users\\JACOB\\.ipynb_checkpoints'
   const [newWorkForm, setNewWorkForm] = useState({
     letterFileNo: '',
     date: '',
     subject: '',
     ph: '',
     workName: '',
+    workplacePath: defaultWorkplacePath,
     status: 'Pending',
     commentMessage: '',
   })
@@ -323,7 +320,6 @@ function App() {
     setSelectedEstimateId(null)
     setDraftEstimate(null)
     setIsNewWorkOpen(false)
-    setEntryMode('manual')
   }
 
   const openDetailPage = (estimate, mode) => {
@@ -434,16 +430,13 @@ function App() {
   }
 
   const openNewWorkModal = () => {
-    setEntryMode('upload')
-    setUploadedLocFile(null)
-    setLocError('')
-    setIsDragOver(false)
     setNewWorkForm({
       letterFileNo: '',
       date: '',
       subject: '',
       ph: '',
       workName: '',
+      workplacePath: defaultWorkplacePath,
       status: 'Pending',
       commentMessage: '',
     })
@@ -452,9 +445,6 @@ function App() {
 
   const closeNewWorkModal = () => {
     setIsNewWorkOpen(false)
-    setUploadedLocFile(null)
-    setLocError('')
-    setIsDragOver(false)
   }
 
   const handleNewWorkChange = (field, value) => {
@@ -472,31 +462,6 @@ function App() {
     }, 0)
 
     return `EST-${String(maxNumber + 1).padStart(3, '0')}`
-  }
-
-  const isAllowedLocFile = (fileName) => {
-    const allowedExtensions = ['.pdf', '.doc', '.docx']
-    const normalizedName = fileName.toLowerCase()
-    return allowedExtensions.some((extension) => normalizedName.endsWith(extension))
-  }
-
-  const handleLocFile = (file) => {
-    if (!file) {
-      return
-    }
-
-    if (!isAllowedLocFile(file.name)) {
-      setUploadedLocFile(null)
-      setLocError('Supported formats are PDF, DOC, DOCX only.')
-      return
-    }
-
-    setUploadedLocFile(file)
-    setLocError('')
-  }
-
-  const triggerLocFilePicker = () => {
-    locFileInputRef.current?.click()
   }
 
   const rememberSelectedFile = (fileName) => {
@@ -531,6 +496,78 @@ function App() {
       },
     ])
     workNameFileInputRef.current?.click()
+  }
+
+  const buildPathTargetUrl = (rawPath) => {
+    const trimmedPath = rawPath?.trim()
+
+    if (!trimmedPath) {
+      return ''
+    }
+
+    if (/^https?:\/\//i.test(trimmedPath)) {
+      return trimmedPath
+    }
+
+    return ''
+  }
+
+  const openWorkNamePath = (estimate) => {
+    const targetPath = estimate?.workplacePath?.trim() || defaultWorkplacePath
+
+    if (!targetPath) {
+      openWorkNameFilePicker()
+      return
+    }
+
+    // Browsers block direct opening of local folders. Go straight to chooser for local paths.
+    if (/^[a-zA-Z]:[\\/]/.test(targetPath) || /^file:\/\//i.test(targetPath)) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: `Using file chooser for local path: ${targetPath}`,
+        },
+      ])
+      openWorkNameFilePicker()
+      return
+    }
+
+    const targetUrl = buildPathTargetUrl(targetPath)
+
+    if (!targetUrl) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: `Path is not valid: ${targetPath}. Use full path like C:\\Users\\JACOB\\Links or file:/// URL.`,
+        },
+      ])
+      openWorkNameFilePicker()
+      return
+    }
+
+    const opened = window.open(targetUrl, '_blank', 'noopener,noreferrer')
+
+    if (!opened) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: `Could not open ${targetPath}. Browser blocked direct access, so opening file chooser instead.`,
+        },
+      ])
+      openWorkNameFilePicker()
+      return
+    }
+
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        role: 'bot',
+        text: `Opened path for ${estimate.workName}: ${targetPath}`,
+      },
+    ])
   }
 
   const handleWorkNameDirectoryChange = (event) => {
@@ -643,71 +680,33 @@ function App() {
     setChatInput('')
   }
 
-  const handleLocInputChange = (event) => {
-    const file = event.target.files?.[0]
-    handleLocFile(file)
-  }
-
-  const handleLocDragOver = (event) => {
-    event.preventDefault()
-    setIsDragOver(true)
-  }
-
-  const handleLocDragLeave = (event) => {
-    event.preventDefault()
-    setIsDragOver(false)
-  }
-
-  const handleLocDrop = (event) => {
-    event.preventDefault()
-    setIsDragOver(false)
-    const file = event.dataTransfer.files?.[0]
-    handleLocFile(file)
-  }
-
   const saveNewWork = () => {
-    if (entryMode === 'manual' && !newWorkForm.workName.trim()) {
-      return
-    }
-
-    if (entryMode === 'upload' && !uploadedLocFile) {
+    if (!newWorkForm.workName.trim()) {
       return
     }
 
     const generatedId = createEstimateId()
-    const uploadBaseName = uploadedLocFile?.name.replace(/\.[^/.]+$/, '') || ''
-    const normalizedFileNo =
-      entryMode === 'upload'
-        ? generatedId
-        : newWorkForm.letterFileNo.trim() || generatedId
+    const normalizedFileNo = newWorkForm.letterFileNo.trim() || generatedId
 
     const nextEstimate = {
       id: generatedId,
-      estimNo:
-        entryMode === 'upload'
-          ? uploadBaseName || generatedId
-          : normalizedFileNo,
+      estimNo: normalizedFileNo,
       fileNo: normalizedFileNo,
-      ph: entryMode === 'upload' ? 'NA' : newWorkForm.ph.trim() || 'NA',
-      workName:
-        entryMode === 'upload'
-          ? uploadBaseName || 'LOC Uploaded Work'
-          : newWorkForm.workName.trim(),
+      ph: newWorkForm.ph.trim() || 'NA',
+      workName: newWorkForm.workName.trim(),
+      workplacePath: newWorkForm.workplacePath.trim() || defaultWorkplacePath,
       abstractEstimate: 'NA',
       detailEstimate: 'NA',
       sAndTCost: 'NA',
       storesCost: 'NA',
       rcilProvision: 'NA',
-      commentMessage:
-        entryMode === 'upload'
-          ? `LOC uploaded: ${uploadedLocFile.name}`
-          : newWorkForm.commentMessage.trim() || '-',
+      commentMessage: newWorkForm.commentMessage.trim() || '-',
       user: 'Current User',
       amount: 0,
       currentStage: 'Submitted',
       status: 'Pending',
-      subject: entryMode === 'upload' ? '' : newWorkForm.subject.trim(),
-      date: entryMode === 'upload' ? '' : newWorkForm.date,
+      subject: newWorkForm.subject.trim(),
+      date: newWorkForm.date,
     }
 
     setEstimates((prev) => {
@@ -731,7 +730,7 @@ function App() {
     closeNewWorkModal()
   }
 
-  const isSaveDisabled = entryMode === 'upload' ? !uploadedLocFile : !newWorkForm.workName.trim()
+  const isSaveDisabled = !newWorkForm.workName.trim()
 
   if (!currentUser) {
     return (
@@ -1263,8 +1262,8 @@ function App() {
                                 <button
                                   type="button"
                                   className="work-name-link"
-                                  onClick={openWorkNameFilePicker}
-                                  title="Open local file picker"
+                                  onClick={() => openWorkNamePath(estimate)}
+                                  title={`Open path: ${estimate.workplacePath || defaultWorkplacePath}`}
                                 >
                                   {estimate.workName}
                                 </button>
@@ -1464,7 +1463,7 @@ function App() {
                     <div className="modal-overlay" role="dialog" aria-modal="true">
                       <div className="new-work-modal">
                         <div className="new-work-head">
-                          <h3>New Work - Upload LOC</h3>
+                          <h3>New Work</h3>
                           <button
                             type="button"
                             className="modal-close-btn"
@@ -1476,60 +1475,7 @@ function App() {
                         </div>
 
                         <div className="new-work-body">
-                          <div className="entry-toggle-row">
-                            <button
-                              type="button"
-                              className={
-                                entryMode === 'upload' ? 'entry-mode-btn active' : 'entry-mode-btn'
-                              }
-                              onClick={() => setEntryMode('upload')}
-                            >
-                              Upload LOC
-                            </button>
-                            <button
-                              type="button"
-                              className={
-                                entryMode === 'manual' ? 'entry-mode-btn active' : 'entry-mode-btn'
-                              }
-                              onClick={() => setEntryMode('manual')}
-                            >
-                              Manual Entry
-                            </button>
-                          </div>
-
-                          {entryMode === 'upload' ? (
-                            <div className="upload-loc-wrap">
-                              <input
-                                ref={locFileInputRef}
-                                type="file"
-                                accept=".pdf,.doc,.docx"
-                                className="loc-file-input"
-                                onChange={handleLocInputChange}
-                              />
-                              <button
-                                type="button"
-                                className={isDragOver ? 'upload-dropzone drag-over' : 'upload-dropzone'}
-                                onClick={triggerLocFilePicker}
-                                onDragOver={handleLocDragOver}
-                                onDragLeave={handleLocDragLeave}
-                                onDrop={handleLocDrop}
-                              >
-                                <svg viewBox="0 0 24 24" className="upload-icon" aria-hidden="true">
-                                  <path
-                                    d="M19 17a4 4 0 0 0-1-7.87A5.5 5.5 0 0 0 7.2 10.3 3.5 3.5 0 0 0 7.5 17H11v-4H9l3-3 3 3h-2v4h6z"
-                                    fill="currentColor"
-                                  />
-                                </svg>
-                                <p className="upload-title">Drag &amp; Drop or Click to Upload LOC</p>
-                                <p className="upload-subtitle">Supported formats: PDF, DOC, DOCX</p>
-                              </button>
-                              {uploadedLocFile && (
-                                <p className="selected-file">Selected: {uploadedLocFile.name}</p>
-                              )}
-                              {locError && <p className="loc-error">{locError}</p>}
-                            </div>
-                          ) : (
-                            <div className="new-work-grid">
+                          <div className="new-work-grid">
                               <label className="form-field">
                                 <span>Letter / File No</span>
                                 <input
@@ -1586,6 +1532,18 @@ function App() {
                                 />
                               </label>
 
+                              <label className="form-field wide-field">
+                                <span>Work Place Path</span>
+                                <input
+                                  type="text"
+                                  placeholder="Enter workplace path"
+                                  value={newWorkForm.workplacePath}
+                                  onChange={(event) =>
+                                    handleNewWorkChange('workplacePath', event.target.value)
+                                  }
+                                />
+                              </label>
+
                               {/* <label className="form-field">
                                 <span>Status</span>
                                 <select
@@ -1611,7 +1569,6 @@ function App() {
                                 />
                               </label> */}
                             </div>
-                          )}
                         </div>
 
                         <div className="new-work-foot">
